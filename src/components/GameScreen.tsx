@@ -1,30 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
 import './GameScreen.css';
+import { 
+  GAME_CONFIG, 
+  HANGMAN_STAGES, 
+  ALPHABET,
+  MESSAGES,
+  Difficulty,
+  DEFAULT_DIFFICULTY,
+  DIFFICULTY_CONFIGS
+} from '../constants/gameConstants';
 
 interface GameScreenProps {
   word: string;
   category?: string;
+  difficulty?: Difficulty;
+  maxWrongGuesses?: number;
   onGameEnd: (won: boolean) => void;
   onRestart: () => void;
 }
 
-const MAX_WRONG_GUESSES = 7;
-const HANGMAN_STAGES = [
-  '', // 0 Fehler
-  '  |\n  |\n  |\n  |\n  |\n__|__', // 1 Fehler
-  '  +---+\n  |   |\n  |\n  |\n  |\n  |\n__|__', // 2 Fehler
-  '  +---+\n  |   |\n  |   O\n  |\n  |\n  |\n__|__', // 3 Fehler
-  '  +---+\n  |   |\n  |   O\n  |   |\n  |\n  |\n__|__', // 4 Fehler
-  '  +---+\n  |   |\n  |   O\n  |  /|\n  |\n  |\n__|__', // 5 Fehler
-  '  +---+\n  |   |\n  |   O\n  |  /|\\\n  |\n  |\n__|__', // 6 Fehler
-  '  +---+\n  |   |\n  |   O\n  |  /|\\\n  |  /\n  |\n__|__', // 7 Fehler (verloren)
-];
-
-export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenProps) {
+export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, maxWrongGuesses: customMaxWrongGuesses, onGameEnd, onRestart }: GameScreenProps) {
   const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [gameWon, setGameWon] = useState(false);
   const [gameLost, setGameLost] = useState(false);
+  const [wrongLettersSet, setWrongLettersSet] = useState<Set<string>>(new Set()); // Für Duplikat-Erkennung (Hard-Modus)
+  
+  const difficultyConfig = DIFFICULTY_CONFIGS[difficulty];
+  const maxWrongGuesses = customMaxWrongGuesses ?? GAME_CONFIG.MAX_WRONG_GUESSES;
 
   // Normalisiere das Wort (Umlaute behandeln)
   const normalizedWord = word.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -45,11 +48,11 @@ export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenP
 
   // Prüfe ob Spiel verloren
   useEffect(() => {
-    if (wrongGuesses >= MAX_WRONG_GUESSES) {
+    if (wrongGuesses >= maxWrongGuesses) {
       setGameLost(true);
       onGameEnd(false);
     }
-  }, [wrongGuesses, onGameEnd]);
+  }, [wrongGuesses, maxWrongGuesses, onGameEnd]);
 
   const handleLetterClick = useCallback((letter: string) => {
     if (gameWon || gameLost || guessedLetters.has(letter)) {
@@ -62,9 +65,15 @@ export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenP
     setGuessedLetters(prev => new Set(prev).add(letter));
 
     if (!isInWord) {
-      setWrongGuesses(prev => prev + 1);
+      // Hard-Modus: Doppelte Strafe bei wiederholtem falschem Raten
+      if (difficultyConfig.doublePenaltyOnDuplicate && wrongLettersSet.has(normalizedLetter)) {
+        setWrongGuesses(prev => prev + GAME_CONFIG.DUPLICATE_PENALTY_MULTIPLIER);
+      } else {
+        setWrongGuesses(prev => prev + 1);
+      }
+      setWrongLettersSet(prev => new Set(prev).add(normalizedLetter));
     }
-  }, [guessedLetters, normalizedWord, gameWon, gameLost]);
+  }, [guessedLetters, normalizedWord, gameWon, gameLost, difficultyConfig, wrongLettersSet]);
 
   // Keyboard-Events
   useEffect(() => {
@@ -94,19 +103,20 @@ export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenP
       .join(' ');
   };
 
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split('');
-
   return (
     <div className="game-screen">
       <div className="game-header">
         {category && <div className="category">Kategorie: {category}</div>}
+        <div className="difficulty">Schwierigkeit: {difficultyConfig.name}</div>
         <div className="wrong-guesses">
-          Fehler: {wrongGuesses} / {MAX_WRONG_GUESSES}
+          Fehler: {wrongGuesses} / {maxWrongGuesses}
         </div>
       </div>
 
       <div className="hangman-display">
-        <pre className="hangman-art">{HANGMAN_STAGES[wrongGuesses]}</pre>
+        <pre className="hangman-art">
+          {HANGMAN_STAGES[Math.min(wrongGuesses, HANGMAN_STAGES.length - 1)]}
+        </pre>
       </div>
 
       <div className="word-display">
@@ -115,7 +125,7 @@ export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenP
 
       {gameWon && (
         <div className="game-over win">
-          <h2>🎉 Gewonnen!</h2>
+          <h2>{MESSAGES.WIN}</h2>
           <p>Das Wort war: <strong>{word}</strong></p>
           <button onClick={onRestart}>Nochmal spielen</button>
         </div>
@@ -123,7 +133,7 @@ export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenP
 
       {gameLost && (
         <div className="game-over lose">
-          <h2>😢 Verloren!</h2>
+          <h2>{MESSAGES.LOSE}</h2>
           <p>Das Wort war: <strong>{word}</strong></p>
           <button onClick={onRestart}>Nochmal spielen</button>
         </div>
@@ -131,16 +141,19 @@ export function GameScreen({ word, category, onGameEnd, onRestart }: GameScreenP
 
       {!gameWon && !gameLost && (
         <div className="alphabet">
-          {alphabet.map(letter => {
+          {ALPHABET.map(letter => {
             const isGuessed = guessedLetters.has(letter);
             const normalizedLetter = letter.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const isWrong = isGuessed && !normalizedWord.includes(normalizedLetter);
             const isCorrect = isGuessed && normalizedWord.includes(normalizedLetter);
+            
+            // Mittel/Schwer-Modus: Falsche Buchstaben nicht als "wrong" markieren (verstecken)
+            const showWrong = !difficultyConfig.hideWrongLetters && isWrong;
 
             return (
               <button
                 key={letter}
-                className={`letter-button ${isWrong ? 'wrong' : ''} ${isCorrect ? 'correct' : ''} ${isGuessed ? 'guessed' : ''}`}
+                className={`letter-button ${showWrong ? 'wrong' : ''} ${isCorrect ? 'correct' : ''} ${isGuessed ? 'guessed' : ''}`}
                 onClick={() => handleLetterClick(letter)}
                 disabled={isGuessed}
               >

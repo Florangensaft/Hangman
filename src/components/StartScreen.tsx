@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import './StartScreen.css';
+import { WORD_CONFIG, MESSAGES, UI_CONFIG } from '../constants/gameConstants';
 
 interface StartScreenProps {
   onStartGame: (mode: 'custom' | 'random', word?: string) => void;
+  onOpenOptions?: () => void;
 }
 
-export function StartScreen({ onStartGame }: StartScreenProps) {
+export function StartScreen({ onStartGame, onOpenOptions }: StartScreenProps) {
   const [customWord, setCustomWord] = useState('');
   const [showInput, setShowInput] = useState(false);
 
@@ -13,11 +15,20 @@ export function StartScreen({ onStartGame }: StartScreenProps) {
     e.preventDefault();
     const word = customWord.trim().toUpperCase();
     if (word.length > 0) {
+      // Validierung der Wortlänge
+      if (word.length < WORD_CONFIG.MIN_LENGTH) {
+        alert(MESSAGES.WORD_TOO_SHORT);
+        return;
+      }
+      if (word.length > WORD_CONFIG.MAX_LENGTH) {
+        alert(MESSAGES.WORD_TOO_LONG);
+        return;
+      }
       // Nur Buchstaben erlauben
-      if (/^[A-ZÄÖÜß]+$/.test(word)) {
+      if (WORD_CONFIG.LETTERS_ONLY.test(word)) {
         onStartGame('custom', word);
       } else {
-        alert('Bitte geben Sie nur Buchstaben ein!');
+        alert(MESSAGES.INVALID_WORD);
       }
     }
   };
@@ -37,8 +48,8 @@ export function StartScreen({ onStartGame }: StartScreenProps) {
         alert('Wortliste erweitern kommt bald!');
         break;
       case 'optionen':
-        // Platzhalter - Logik kommt später
-        alert('Optionen kommen bald!');
+        // Öffnet das Options-Menü
+        onOpenOptions?.();
         break;
       default:
         break;
@@ -96,7 +107,7 @@ export function StartScreen({ onStartGame }: StartScreenProps) {
                 onChange={(e) => setCustomWord(e.target.value.toUpperCase())}
                 placeholder="Wort eingeben..."
                 autoFocus
-                maxLength={20}
+                maxLength={UI_CONFIG.INPUT_MAX_LENGTH}
               />
             </label>
             <div className="form-buttons">
