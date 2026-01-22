@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { StartScreen } from './components/StartScreen';
 import { GameScreen } from './components/GameScreen';
 import { OptionsScreen } from './components/OptionsScreen';
+import { ShopScreen } from './components/ShopScreen';
 import { loadWordsFromCSV, getRandomWord, type Word } from './utils/wordLoader';
 import { Difficulty, DEFAULT_DIFFICULTY, type GameSettings } from './constants/gameConstants';
 import { loadSettings } from './utils/settingsUtils';
@@ -25,6 +26,7 @@ function App() {
   const [words, setWords] = useState<Word[]>([]);
   const [settings, setSettings] = useState<GameSettings | null>(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [showShop, setShowShop] = useState(false);
 
   // Lade Einstellungen beim Start
   useEffect(() => {
@@ -73,6 +75,14 @@ function App() {
     setShowOptions(false);
   };
 
+  const handleOpenShop = () => {
+    setShowShop(true);
+  };
+
+  const handleCloseShop = () => {
+    setShowShop(false);
+  };
+
   const handleSettingsChange = (newSettings: GameSettings) => {
     setSettings(newSettings);
   };
@@ -102,6 +112,7 @@ function App() {
         <StartScreen 
           onStartGame={handleStartGame}
           onOpenOptions={handleOpenOptions}
+          onOpenShop={handleOpenShop}
         />
       ) : (
         <GameScreen
@@ -117,6 +128,11 @@ function App() {
         <OptionsScreen
           onClose={handleCloseOptions}
           onSettingsChange={handleSettingsChange}
+        />
+      )}
+      {showShop && (
+        <ShopScreen
+          onClose={handleCloseShop}
         />
       )}
     </div>

@@ -151,8 +151,126 @@ export const STORAGE_KEYS = {
   HIGHSCORE: 'hangman_highscore',
   SETTINGS: 'hangman_settings',
   STATISTICS: 'hangman_statistics',
-  PREFERENCES: 'hangman_preferences'
+  PREFERENCES: 'hangman_preferences',
+  SHOP_ITEMS: 'hangman_shop_items',
+  COINS: 'hangman_coins'
 } as const;
+
+// ============================================
+// SHOP-SYSTEM
+// ============================================
+export type ShopCategory = 'hangman-figures' | 'gallows' | 'backgrounds' | 'soundpacks';
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  description: string;
+  category: ShopCategory;
+  price: number;
+  imagePath?: string;
+  assetPath?: string;
+  unlocked: boolean;
+  equipped?: boolean;
+}
+
+export const SHOP_CATEGORIES: Record<ShopCategory, { name: string; icon: string }> = {
+  'hangman-figures': {
+    name: 'Hangmanfiguren',
+    icon: '👤'
+  },
+  'gallows': {
+    name: 'Galgen',
+    icon: '🏗️'
+  },
+  'backgrounds': {
+    name: 'Hintergründe',
+    icon: '🖼️'
+  },
+  'soundpacks': {
+    name: 'Soundpakete',
+    icon: '🔊'
+  }
+} as const;
+
+// Standard-Shop-Items (können später erweitert werden)
+export const DEFAULT_SHOP_ITEMS: ShopItem[] = [
+  // Hangmanfiguren
+  {
+    id: 'figure-default',
+    name: 'Standard Figur',
+    description: 'Die Standard-Hangman-Figur',
+    category: 'hangman-figures',
+    price: 0,
+    unlocked: true,
+    equipped: true
+  },
+  {
+    id: 'figure-1',
+    name: 'Figur 1',
+    description: 'Eine alternative Hangman-Figur',
+    category: 'hangman-figures',
+    price: 100,
+    unlocked: false,
+    equipped: false
+  },
+  // Galgen
+  {
+    id: 'gallows-default',
+    name: 'Standard Galgen',
+    description: 'Der Standard-Galgen',
+    category: 'gallows',
+    price: 0,
+    unlocked: true,
+    equipped: true
+  },
+  {
+    id: 'gallows-1',
+    name: 'Galgen 1',
+    description: 'Ein alternativer Galgen',
+    category: 'gallows',
+    price: 150,
+    unlocked: false,
+    equipped: false
+  },
+  // Hintergründe
+  {
+    id: 'background-default',
+    name: 'Standard Hintergrund',
+    description: 'Der Standard-Hintergrund',
+    category: 'backgrounds',
+    price: 0,
+    unlocked: true,
+    equipped: true
+  },
+  {
+    id: 'background-1',
+    name: 'Hintergrund 1',
+    description: 'Ein alternativer Hintergrund',
+    category: 'backgrounds',
+    price: 200,
+    unlocked: false,
+    equipped: false
+  },
+  // Soundpakete
+  {
+    id: 'soundpack-default',
+    name: 'Standard Soundpaket',
+    description: 'Das Standard-Soundpaket',
+    category: 'soundpacks',
+    price: 0,
+    unlocked: true,
+    equipped: true
+  },
+  {
+    id: 'soundpack-1',
+    name: 'Soundpaket 1',
+    description: 'Ein alternatives Soundpaket',
+    category: 'soundpacks',
+    price: 250,
+    unlocked: false,
+    equipped: false
+  }
+] as const;
 
 // ============================================
 // EINSTELLUNGEN (SETTINGS)

@@ -5,9 +5,10 @@ import { WORD_CONFIG, MESSAGES, UI_CONFIG } from '../constants/gameConstants';
 interface StartScreenProps {
   onStartGame: (mode: 'custom' | 'random', word?: string) => void;
   onOpenOptions?: () => void;
+  onOpenShop?: () => void;
 }
 
-export function StartScreen({ onStartGame, onOpenOptions }: StartScreenProps) {
+export function StartScreen({ onStartGame, onOpenOptions, onOpenShop }: StartScreenProps) {
   const [customWord, setCustomWord] = useState('');
   const [showInput, setShowInput] = useState(false);
 
@@ -57,8 +58,7 @@ export function StartScreen({ onStartGame, onOpenOptions }: StartScreenProps) {
   };
 
   const handleShopClick = () => {
-    // Platzhalter - Logik kommt später
-    alert('Shop kommt bald!');
+    onOpenShop?.();
   };
 
   return (
