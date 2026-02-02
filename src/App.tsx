@@ -6,6 +6,7 @@ import { ShopScreen } from './components/ShopScreen';
 import { loadWordsFromCSV, getRandomWord, type Word } from './utils/wordLoader';
 import { Difficulty, DEFAULT_DIFFICULTY, type GameSettings } from './constants/gameConstants';
 import { loadSettings } from './utils/settingsUtils';
+import { awardGameCoins } from './utils/shopUtils';
 import './App.css';
 
 type GameMode = 'start' | 'custom' | 'random' | 'options';
@@ -87,9 +88,18 @@ function App() {
     setSettings(newSettings);
   };
 
-  const handleGameEnd = (won: boolean) => {
-    // Optional: Hier könnte man Statistiken speichern
-    console.log(`Spiel beendet: ${won ? 'Gewonnen' : 'Verloren'}`);
+  const handleGameEnd = (result: {
+    won: boolean;
+    wrongGuesses: number;
+    maxWrongGuesses: number;
+    difficulty: Difficulty;
+  }) => {
+    awardGameCoins(
+      result.won,
+      result.wrongGuesses,
+      result.maxWrongGuesses,
+      result.difficulty
+    );
   };
 
   const handleRestart = () => {
