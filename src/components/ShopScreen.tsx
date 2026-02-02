@@ -28,7 +28,7 @@ function PaymentModal({
   priceEuro = 99.99
 }: PaymentModalProps) {
   const [step, setStep] = useState<PaymentStep>('select');
-  const [method, setMethod] = useState<PaymentMethod | null>(null);
+  const [, setMethod] = useState<PaymentMethod | null>(null);
   // Simple Formstates (keine echte Validierung, da immer erfolgreich)
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '' });
   const [paysafeCode, setPaysafeCode] = useState('');
@@ -75,7 +75,6 @@ function PaymentModal({
   aria-modal="true"
   onClick={onClose}
 >
-
       <div className="buy-coins-content" onClick={(e) => e.stopPropagation()} aria-live="polite">
         <h2>💰 Coins kaufen</h2>
         <p>
