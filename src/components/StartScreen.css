@@ -168,6 +168,10 @@
   color: #fff;
   outline: none;
 }
+.wordlist-form select option {
+  background: #333;
+  color: #fff;
+}
 .category-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .category-label { font-weight: 600; }
 .category-switch label { margin-right: 10px; }
