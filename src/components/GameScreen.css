@@ -5,7 +5,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* background removed to allow app background */
   color: white;
 }
 
@@ -36,21 +36,85 @@
 .hangman-display {
   margin: 2rem 0;
   background: rgba(255, 255, 255, 0.1);
-  padding: 2rem;
   border-radius: 12px;
-  min-height: 200px;
+  width: 500px;
+  height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.hangman-art {
-  font-family: 'Courier New', monospace;
-  font-size: 1rem;
-  line-height: 1.4;
-  margin: 0;
-  white-space: pre;
-  color: white;
+.gallows-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 1;
+}
+
+/* Base Figure Style */
+.figure-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 2;
+}
+
+/* Stick Figure Positioning */
+.figure-img-stick {
+  transform: translate(72px, -59px) scale(0.4);
+}
+
+/* Specific positioning for Holzgalgen (gallows-1) with Stick Figure */
+.gallows-1 .figure-img-stick {
+  transform: translate(-8px, -58px) scale(0.4);
+}
+
+/* Specific positioning for Temple Galgen (gallows-2) with Stick Figure */
+.gallows-2 .figure-img-stick {
+  transform: translate(-8px, -58px) scale(0.4);
+}
+
+/* Specific positioning for Standard Galgen (gallows-1) with Stick Figure */
+.gallows-1 .figure-img-stick {
+  transform: translate(72px, -59px) scale(0.4);
+}
+
+/* Pixel Figure Positioning */
+.figure-img-pixel {
+  transform: translate(78px, -15px) scale(0.6);
+}
+
+/* Specific positioning for Holzgalgen (gallows-1) with Pixel Figure */
+.gallows-1 .figure-img-pixel {
+  transform: translate(-8px, -24px) scale(0.6);
+}
+
+/* Specific positioning for Temple Galgen (gallows-2) with Pixel Figure */
+.gallows-2 .figure-img-pixel {
+  transform: translate(-8px, -24px) scale(0.6);
+}
+
+/* Specific positioning for Standard Galgen (gallows-1) with Pixel Figure */
+.gallows-1 .figure-img-pixel {
+  transform: translate(78px, -15px) scale(0.6);
+}
+
+/* Dino Figure Positioning (Werte geschätzt - sollten angepasst werden wenn bekannt) */
+.figure-img-dino {
+  transform: translate(72px, -59px) scale(0.4); 
+}
+
+/* Specific positioning for Temple Galgen (gallows-2) with Dino Figure */
+.gallows-2 .figure-img-dino {
+  transform: translate(-14px, -65px) scale(0.3);
 }
 
 .word-display {

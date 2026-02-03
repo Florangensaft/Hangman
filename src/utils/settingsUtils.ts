@@ -9,7 +9,7 @@ export function loadSettings(): GameSettings {
     if (stored) {
       const parsed = JSON.parse(stored) as GameSettings;
       // Validiere und merge mit Defaults für fehlende Felder
-      return {
+      const settings = {
         ...DEFAULT_SETTINGS,
         ...parsed,
         audio: {
@@ -17,6 +17,13 @@ export function loadSettings(): GameSettings {
           ...parsed.audio
         }
       };
+
+      // Migration: Falls noch der alte Standardwert (7) gespeichert ist, auf den neuen (11) aktualisieren
+      if (settings.maxWrongGuesses === 7) {
+        settings.maxWrongGuesses = DEFAULT_SETTINGS.maxWrongGuesses;
+      }
+
+      return settings;
     }
   } catch (error) {
     console.error('Fehler beim Laden der Einstellungen:', error);

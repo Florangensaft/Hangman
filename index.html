@@ -7,6 +7,17 @@
     <title>Hangman - Spiel</title>
   </head>
   <body>
+    <div id="root-error" style="color: red; padding: 20px; display: none;"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        var el = document.getElementById('root-error');
+        if (el) {
+          el.style.display = 'block';
+          el.innerHTML += '<div>Error: ' + message + ' at ' + source + ':' + lineno + '</div>';
+        }
+        console.error(error);
+      };
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

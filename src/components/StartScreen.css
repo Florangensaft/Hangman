@@ -5,7 +5,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* background removed to allow app background */
   color: white;
   position: relative;
 }

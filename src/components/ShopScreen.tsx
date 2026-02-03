@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import './ShopScreen.css';
 import { 
@@ -7,6 +6,7 @@ import {
   SHOP_CATEGORIES 
 } from '../constants/gameConstants';
 import { loadShopItems, loadCoins, purchaseItem, equipItem, saveCoins } from '../utils/shopUtils';
+
 type PaymentMethod = 'paypal' | 'card' | 'paysafe';
 type PaymentStep = 'select' | 'paypal' | 'card' | 'paysafe' | 'success';
 interface PaymentModalProps {
@@ -200,6 +200,7 @@ function PaymentModal({
     </div>
   );
 }
+
 interface ShopScreenProps {
   onClose: () => void;
 }
