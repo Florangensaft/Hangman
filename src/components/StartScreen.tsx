@@ -4,7 +4,7 @@ import { WORD_CONFIG, MESSAGES, UI_CONFIG } from '../constants/gameConstants';
 import { loadWordList, saveWordList, addWordSafe, removeWord, type WordListData } from '../utils/wordlistUtils';
 
 interface StartScreenProps {
-  onStartGame: (mode: 'custom' | 'random', word?: string) => void;
+  onStartGame: (mode: 'custom' | 'random' | 'endless', word?: string) => void;
   onOpenOptions?: () => void;
   onOpenShop?: () => void;
   onOpenTest?: () => void;
@@ -46,6 +46,8 @@ export function StartScreen({ onStartGame, onOpenOptions, onOpenShop, onOpenTest
         setShowInput(true);
         setShowWordlist(false);
         break;
+      case 'endless':
+        onStartGame('endless');
       case 'wortliste':
         setShowWordlist(true);
         setShowInput(false);
@@ -107,6 +109,7 @@ export function StartScreen({ onStartGame, onOpenOptions, onOpenShop, onOpenTest
           <>
             <button className="mode-button" onClick={() => handleMenuClick('einzelspieler')}>🎯 Einzelspieler</button>
             <button className="mode-button" onClick={() => handleMenuClick('mehrspieler')}>👥 Mehrspieler</button>
+            <button className="mode-button endless-btn" onClick={() => handleMenuClick('endless')}>♾️ Endlos-Modus</button>
             <button className="mode-button" onClick={() => handleMenuClick('wortliste')}>📝 Wortliste Erweitern</button>
             <button className="mode-button" onClick={() => handleMenuClick('optionen')}>⚙️ Optionen</button>
           </>

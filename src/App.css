@@ -17,3 +17,50 @@ body {
   min-height: 100vh;
 }
 
+.persistent-coins-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffd700;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border: 2px solid #ffd700;
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* In GameScreen.css */
+.streak-banner {
+  background: linear-gradient(45deg, #ff4e50, #f9d423);
+  padding: 10px 30px;
+  border-radius: 15px;
+  font-weight: 900;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  animation: pulse 1.5s infinite;
+}
+
+.endless-win-feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(46, 204, 113, 0.9);
+  color: white;
+  padding: 2rem;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

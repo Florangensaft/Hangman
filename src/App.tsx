@@ -7,10 +7,10 @@ import { TestScreen } from './components/TestScreen';
 import { loadWordsFromCSV, getRandomWord, type Word } from './utils/wordLoader';
 import { Difficulty, DEFAULT_DIFFICULTY, type GameSettings, DEFAULT_SHOP_ITEMS } from './constants/gameConstants';
 import { loadSettings } from './utils/settingsUtils';
-import { loadShopItems, awardGameCoins } from './utils/shopUtils';
+import { loadShopItems, awardGameCoins, loadCoins, saveCoins } from './utils/shopUtils';
 import './App.css';
 
-type GameMode = 'start' | 'custom' | 'random' | 'options';
+type GameMode = 'start' | 'custom' | 'random' | 'options' | 'endless';
 type GameState = {
   mode: GameMode;
   word: string;
@@ -19,7 +19,6 @@ type GameState = {
   maxWrongGuesses?: number;
 };
 
-// App Component
 function App() {
   const [gameState, setGameState] = useState<GameState>({ 
     mode: 'start', 
@@ -29,142 +28,104 @@ function App() {
   const [words, setWords] = useState<Word[]>([]);
   const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
   const [showOptions, setShowOptions] = useState(false);
-    const [showShop, setShowShop] = useState(false);
-    const [showTest, setShowTest] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+  const [showTest, setShowTest] = useState(false);
+
+  // Neue States für Features
+  const [winstreak, setWinstreak] = useState(0);
+  const [currentCoins, setCurrentCoins] = useState(() => loadCoins());
 
   const [selectedFigure, setSelectedFigure] = useState<string>('figure-default');
   const [selectedBackgroundId, setSelectedBackgroundId] = useState<string>('background-default');
   const [selectedGallowsId, setSelectedGallowsId] = useState<string>('gallows-default');
 
   useEffect(() => {
-    // Lade Shop Items um ausgerüstete Figur und Hintergrund zu finden
     const shopItems = loadShopItems();
     const equippedFigure = shopItems.find(item => item.category === 'hangman-figures' && item.equipped);
-    if (equippedFigure) {
-      setSelectedFigure(equippedFigure.id);
-    }
+    if (equippedFigure) setSelectedFigure(equippedFigure.id);
     
     const equippedBackground = shopItems.find(item => item.category === 'backgrounds' && item.equipped);
-    if (equippedBackground) {
-      setSelectedBackgroundId(equippedBackground.id);
-    }
+    if (equippedBackground) setSelectedBackgroundId(equippedBackground.id);
 
     const equippedGallows = shopItems.find(item => item.category === 'gallows' && item.equipped);
-    if (equippedGallows) {
-      setSelectedGallowsId(equippedGallows.id);
-    }
-  }, [showShop]); // Update wenn Shop geschlossen wird
+    if (equippedGallows) setSelectedGallowsId(equippedGallows.id);
+    
+    setCurrentCoins(loadCoins());
+  }, [showShop]);
 
   useEffect(() => {
-    // Lade Wörter beim Start
-    loadWordsFromCSV().then(loadedWords => {
-      setWords(loadedWords);
-    });
+    loadWordsFromCSV().then(loadedWords => setWords(loadedWords));
   }, []);
 
-  const handleStartGame = (mode: 'custom' | 'random', customWord?: string) => {
-    if (!settings) return; // Warte bis Settings geladen sind
+  const handleStartGame = (mode: 'custom' | 'random' | 'endless', customWord?: string) => {
+    if (!settings) return;
     
-    if (mode === 'custom' && customWord) {
+    if (mode === 'endless') {
+      setWinstreak(0);
+      const randomWord = getRandomWord(words.length > 0 ? words : [{ wort: 'APFEL', kategorie: 'Obst' }]);
       setGameState({
-        mode: 'custom',
-        word: customWord,
-        difficulty: settings.difficulty,
-        maxWrongGuesses: settings.maxWrongGuesses,
-      });
-    } else if (mode === 'random') {
-      const randomWord = getRandomWord(words.length > 0 ? words : [
-        { wort: 'APFEL', kategorie: 'Obst' },
-        { wort: 'COMPUTER', kategorie: 'Technik' },
-        { wort: 'SCHULE', kategorie: 'Bildung' }
-      ]);
-      setGameState({
-        mode: 'random',
+        mode: 'endless',
         word: randomWord.wort,
         category: randomWord.kategorie,
         difficulty: settings.difficulty,
         maxWrongGuesses: settings.maxWrongGuesses,
       });
+    } else if (mode === 'custom' && customWord) {
+      setGameState({ mode: 'custom', word: customWord, difficulty: settings.difficulty, maxWrongGuesses: settings.maxWrongGuesses });
+    } else if (mode === 'random') {
+      const randomWord = getRandomWord(words);
+      setGameState({ mode: 'random', word: randomWord.wort, category: randomWord.kategorie, difficulty: settings.difficulty, maxWrongGuesses: settings.maxWrongGuesses });
     }
   };
 
-  const handleOpenOptions = () => {
-    setShowOptions(true);
-  };
+  const handleGameEnd = (result: { won: boolean; wrongGuesses: number; maxWrongGuesses: number; difficulty: Difficulty; }) => {
+    if (gameState.mode === 'endless') {
+      if (result.won) {
+        const nextStreak = winstreak + 1;
+        setWinstreak(nextStreak);
+        
+        // Bonus: 1 Coin + 1 extra alle 10 Siege
+        const earned = 1 + Math.floor(nextStreak / 10);
+        const newTotal = loadCoins() + earned;
+        saveCoins(newTotal);
+        setCurrentCoins(newTotal);
 
-  const handleCloseOptions = () => {
-    setShowOptions(false);
-  };
-
-  const handleOpenShop = () => {
-    setShowShop(true);
-  };
-
-    const handleCloseShop = () => {
-      setShowShop(false);
-    };
-
-    const handleOpenTest = () => {
-      setShowTest(true);
-    };
-
-    const handleCloseTest = () => {
-      setShowTest(false);
-    };
-
-    const handleSettingsChange = (newSettings: GameSettings) => {
-    setSettings(newSettings);
-  };
-
-  const handleGameEnd = (result: {
-    won: boolean;
-    wrongGuesses: number;
-    maxWrongGuesses: number;
-    difficulty: Difficulty;
-  }) => {
-    awardGameCoins(
-      result.won,
-      result.wrongGuesses,
-      result.maxWrongGuesses,
-      result.difficulty
-    );
+        // Automatischer Reset zum nächsten Wort
+        setTimeout(() => {
+          const nextWord = getRandomWord(words);
+          setGameState(prev => ({ ...prev, word: nextWord.wort, category: nextWord.kategorie }));
+        }, 1200);
+      }
+    } else {
+      awardGameCoins(result.won, result.wrongGuesses, result.maxWrongGuesses, result.difficulty);
+      setCurrentCoins(loadCoins());
+    }
   };
 
   const handleRestart = () => {
     setGameState({ 
-      mode: 'start', 
-      word: '', 
+      mode: 'start', word: '', 
       difficulty: settings?.difficulty ?? DEFAULT_DIFFICULTY,
       maxWrongGuesses: settings?.maxWrongGuesses
     });
   };
 
-
-  // Hilfsfunktion um das Hintergrundbild basierend auf der ID zu bekommen
-  const getBackgroundImage = () => {
-    const item = DEFAULT_SHOP_ITEMS.find(i => i.id === selectedBackgroundId);
-    return item?.imagePath;
-  };
-
-  const backgroundImage = getBackgroundImage();
+  const backgroundImage = DEFAULT_SHOP_ITEMS.find(i => i.id === selectedBackgroundId)?.imagePath;
 
   return (
-    <div 
-      className="app"
-      style={backgroundImage ? { 
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      } : undefined}
-    >
+    <div className="app" style={backgroundImage ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' } : undefined}>
+      
+      {/* Coin Anzeige permanent unten rechts */}
+      <div className="persistent-coins-badge" onClick={() => setShowShop(true)}>
+        <span className="coin-icon">🪙</span> {currentCoins}
+      </div>
+
       {gameState.mode === 'start' ? (
         <StartScreen 
           onStartGame={handleStartGame}
-          onOpenOptions={handleOpenOptions}
-          onOpenShop={handleOpenShop}
-          onOpenTest={handleOpenTest}
+          onOpenOptions={() => setShowOptions(true)}
+          onOpenShop={() => setShowShop(true)}
+          onOpenTest={() => setShowTest(true)}
         />
       ) : (
         <GameScreen
@@ -172,28 +133,17 @@ function App() {
           category={gameState.category}
           difficulty={gameState.difficulty}
           maxWrongGuesses={gameState.maxWrongGuesses}
+          winstreak={gameState.mode === 'endless' ? winstreak : undefined}
           onGameEnd={handleGameEnd}
           onRestart={handleRestart}
           selectedFigure={selectedFigure}
           selectedGallowsId={selectedGallowsId}
         />
       )}
-      {showOptions && (
-        <OptionsScreen
-          onClose={handleCloseOptions}
-          onSettingsChange={handleSettingsChange}
-        />
-      )}
-      {showShop && (
-        <ShopScreen
-          onClose={handleCloseShop}
-        />
-      )}
-      {showTest && (
-        <TestScreen
-          onBack={handleCloseTest}
-        />
-      )}
+
+      {showOptions && <OptionsScreen onClose={() => setShowOptions(false)} onSettingsChange={setSettings} />}
+      {showShop && <ShopScreen onClose={() => setShowShop(false)} />}
+      {showTest && <TestScreen onBack={() => setShowTest(false)} />}
     </div>
   );
 }

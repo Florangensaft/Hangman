@@ -106,12 +106,13 @@ export const UI_CONFIG = {
 // ============================================
 // SPIEL-MODI
 // ============================================
-export type GameMode = 'start' | 'custom' | 'random';
+export type GameMode = 'start' | 'custom' | 'random' | 'endless';
 
 export const GameMode = {
   START: 'start' as const,
   CUSTOM: 'custom' as const,
-  RANDOM: 'random' as const
+  RANDOM: 'random' as const,
+  ENDLESS: 'endless' as const
 } as const;
 
 // ============================================

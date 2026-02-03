@@ -10,13 +10,6 @@ import {
 } from '../constants/gameConstants';
 import { calculateCoins } from '../utils/shopUtils';
 
-export interface GameEndResult {
-  won: boolean;
-  wrongGuesses: number;
-  maxWrongGuesses: number;
-  difficulty: Difficulty;
-}
-
 // Gallows Images
 import galgenRightfoot from '../assets/images/gallows/galgenRightfoot.png';
 import galgenFullFoot from '../assets/images/gallows/galgenFullFoot.png';
@@ -60,30 +53,56 @@ import StickFigBothLegs from '../assets/images/figures/notComplete/StickFigBothL
 import StickFigFirstArm from '../assets/images/figures/notComplete/StickFigFirstArm.png';
 import fullStickFig from '../assets/images/figures/complete/fullStickFig.png';
 
+export interface GameEndResult {
+  won: boolean;
+  wrongGuesses: number;
+  maxWrongGuesses: number;
+  difficulty: Difficulty;
+}
+
 interface GameScreenProps {
   word: string;
   category?: string;
   difficulty?: Difficulty;
   maxWrongGuesses?: number;
+  winstreak?: number; // Prop für Endlos-Modus
   onGameEnd: (result: GameEndResult) => void;
   onRestart: () => void;
   selectedFigure: string;
   selectedGallowsId: string;
 }
 
-export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, maxWrongGuesses: customMaxWrongGuesses, onGameEnd, onRestart, selectedFigure, selectedGallowsId }: GameScreenProps) {
+export function GameScreen({ 
+  word, 
+  category, 
+  difficulty = DEFAULT_DIFFICULTY, 
+  maxWrongGuesses: customMaxWrongGuesses, 
+  winstreak, 
+  onGameEnd, 
+  onRestart, 
+  selectedFigure, 
+  selectedGallowsId 
+}: GameScreenProps) {
   const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
   const [wrongGuesses, setWrongGuesses] = useState(0);
   const [gameWon, setGameWon] = useState(false);
   const [gameLost, setGameLost] = useState(false);
-  const [wrongLettersSet, setWrongLettersSet] = useState<Set<string>>(new Set()); // Für Duplikat-Erkennung (Hard-Modus)
+  const [wrongLettersSet, setWrongLettersSet] = useState<Set<string>>(new Set());
   
   const difficultyConfig = DIFFICULTY_CONFIGS[difficulty];
   const maxWrongGuesses = customMaxWrongGuesses ?? GAME_CONFIG.MAX_WRONG_GUESSES;
 
-  // Normalisiere das Wort (Umlaute behandeln)
   const normalizedWord = word.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const displayWord = word.toUpperCase();
+
+  // Reset-Logik für Endlos-Modus: Wenn ein neues Wort reinkommt, alles zurücksetzen
+  useEffect(() => {
+    setGuessedLetters(new Set());
+    setWrongGuesses(0);
+    setGameWon(false);
+    setGameLost(false);
+    setWrongLettersSet(new Set());
+  }, [word]);
 
   // Prüfe ob Spiel gewonnen
   useEffect(() => {
@@ -95,12 +114,7 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
     
     if (allLettersGuessed && normalizedWord.length > 0) {
       setGameWon(true);
-      onGameEnd({
-        won: true,
-        wrongGuesses,
-        maxWrongGuesses,
-        difficulty
-      });
+      onGameEnd({ won: true, wrongGuesses, maxWrongGuesses, difficulty });
     }
   }, [gameWon, gameLost, guessedLetters, normalizedWord, wrongGuesses, maxWrongGuesses, difficulty, onGameEnd]);
 
@@ -109,19 +123,12 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
     if (gameWon || gameLost) return;
     if (wrongGuesses >= maxWrongGuesses) {
       setGameLost(true);
-      onGameEnd({
-        won: false,
-        wrongGuesses,
-        maxWrongGuesses,
-        difficulty
-      });
+      onGameEnd({ won: false, wrongGuesses, maxWrongGuesses, difficulty });
     }
   }, [gameWon, gameLost, wrongGuesses, maxWrongGuesses, difficulty, onGameEnd]);
 
   const handleLetterClick = useCallback((letter: string) => {
-    if (gameWon || gameLost || guessedLetters.has(letter)) {
-      return;
-    }
+    if (gameWon || gameLost || guessedLetters.has(letter)) return;
 
     const normalizedLetter = letter.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const isInWord = normalizedWord.includes(normalizedLetter);
@@ -129,7 +136,6 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
     setGuessedLetters(prev => new Set(prev).add(letter));
 
     if (!isInWord) {
-      // Hard-Modus: Doppelte Strafe bei wiederholtem falschem Raten
       if (difficultyConfig.doublePenaltyOnDuplicate && wrongLettersSet.has(normalizedLetter)) {
         setWrongGuesses(prev => prev + GAME_CONFIG.DUPLICATE_PENALTY_MULTIPLIER);
       } else {
@@ -139,7 +145,6 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
     }
   }, [guessedLetters, normalizedWord, gameWon, gameLost, difficultyConfig, wrongLettersSet]);
 
-  // Keyboard-Events
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       const key = e.key.toUpperCase();
@@ -147,7 +152,6 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
         handleLetterClick(key);
       }
     };
-
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [handleLetterClick, guessedLetters]);
@@ -156,96 +160,75 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
     return displayWord
       .split('')
       .map(char => {
-        if (!/[A-ZÄÖÜ]/.test(char)) {
-          return char; // Leerzeichen, Bindestriche etc. anzeigen
-        }
+        if (!/[A-ZÄÖÜ]/.test(char)) return char;
         const normalizedChar = char.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return guessedLetters.has(char) || guessedLetters.has(normalizedChar) 
-          ? char 
-          : '_';
+        return guessedLetters.has(char) || guessedLetters.has(normalizedChar) ? char : '_';
       })
       .join(' ');
   };
 
-  // Determine which images to show
+  // Image Logic
   let gallowsImage = null;
   const figureImages: string[] = [];
-  let figureClass = 'figure-img'; // Standard-Klasse
+  let figureClass = 'figure-img';
 
-  // Gallows Logic
   if (selectedGallowsId === 'gallows-default') {
-    // Standard Gallows (Now Default)
     if (wrongGuesses >= 1) gallowsImage = galgenRightfoot;
     if (wrongGuesses >= 2) gallowsImage = galgenFullFoot;
     if (wrongGuesses >= 3) gallowsImage = galgenGerade;
     if (wrongGuesses >= 4) gallowsImage = galgenSideSupport;
     if (wrongGuesses >= 5) gallowsImage = galgenFull;
-  } else {
-    // Other Gallows
-    if (selectedGallowsId === 'gallows-1') {
-      // Wooden Gallows
-      if (wrongGuesses >= 1) gallowsImage = woodenGallowHalfFoot;
-      if (wrongGuesses >= 2) gallowsImage = woodenGallowFoot;
-      if (wrongGuesses >= 3) gallowsImage = woodenGallowBalken;
-      if (wrongGuesses >= 4) gallowsImage = woodenGallowWithoutSupport;
-      if (wrongGuesses >= 5) gallowsImage = woodenGallowFull;
-    } else if (selectedGallowsId === 'gallows-2') {
-      // Temple Gallows
-      if (wrongGuesses >= 1) gallowsImage = templeGallowHalfFoot;
-      if (wrongGuesses >= 2) gallowsImage = templeGallowFoot;
-      if (wrongGuesses >= 3) gallowsImage = templeGallowBalken;
-      if (wrongGuesses >= 4) gallowsImage = templeGallowNoSupport;
-      if (wrongGuesses >= 5) gallowsImage = templeGallowFull;
-    } else {
-      // Fallback
-      if (wrongGuesses >= 1) gallowsImage = galgenRightfoot;
-      if (wrongGuesses >= 2) gallowsImage = galgenFullFoot;
-      if (wrongGuesses >= 3) gallowsImage = galgenGerade;
-      if (wrongGuesses >= 4) gallowsImage = galgenSideSupport;
-      if (wrongGuesses >= 5) gallowsImage = galgenFull;
-    }
+  } else if (selectedGallowsId === 'gallows-1') {
+    if (wrongGuesses >= 1) gallowsImage = woodenGallowHalfFoot;
+    if (wrongGuesses >= 2) gallowsImage = woodenGallowFoot;
+    if (wrongGuesses >= 3) gallowsImage = woodenGallowBalken;
+    if (wrongGuesses >= 4) gallowsImage = woodenGallowWithoutSupport;
+    if (wrongGuesses >= 5) gallowsImage = woodenGallowFull;
+  } else if (selectedGallowsId === 'gallows-2') {
+    if (wrongGuesses >= 1) gallowsImage = templeGallowHalfFoot;
+    if (wrongGuesses >= 2) gallowsImage = templeGallowFoot;
+    if (wrongGuesses >= 3) gallowsImage = templeGallowBalken;
+    if (wrongGuesses >= 4) gallowsImage = templeGallowNoSupport;
+    if (wrongGuesses >= 5) gallowsImage = templeGallowFull;
   }
 
-  // Figure Logic based on Selection
   if (selectedFigure === 'figure-default') {
-    // Stick Figure (Standard)
     if (wrongGuesses >= 6) figureImages.push(StickFigHead);
     if (wrongGuesses >= 7) figureImages.push(StickFigBody);
     if (wrongGuesses >= 8) figureImages.push(StickFigFirstLeg);
     if (wrongGuesses >= 9) figureImages.push(StickFigBothLegs);
     if (wrongGuesses >= 10) figureImages.push(StickFigFirstArm);
     if (wrongGuesses >= 11) figureImages.push(fullStickFig);
-    figureClass = 'figure-img-stick'; // Spezielle Klasse für Positioning
-  } 
-  else if (selectedFigure === 'figure-2') {
-    // Dino
-    if (wrongGuesses === 6) figureImages.push(dinoHead);
-    if (wrongGuesses >= 7) figureImages.push(dinoHeadBody);
-    if (wrongGuesses >= 8) figureImages.push(dinoFootLeft);
-    if (wrongGuesses >= 9) figureImages.push(dinoFootRight);
-    if (wrongGuesses >= 10) figureImages.push(dinoArmLeft);
-    if (wrongGuesses >= 11) figureImages.push(dinoArmRight);
-    figureClass = 'figure-img-dino'; // Spezielle Klasse für Positioning
-  }
-  else if (selectedFigure === 'figure-1') {
-    // Pixel
+    figureClass = 'figure-img-stick';
+  } else if (selectedFigure === 'figure-1') {
     if (wrongGuesses >= 6) figureImages.push(head1);
     if (wrongGuesses >= 7) figureImages.push(body1);
     if (wrongGuesses >= 8) figureImages.push(legLeft1);
     if (wrongGuesses >= 9) figureImages.push(legRight1);
     if (wrongGuesses >= 10) figureImages.push(armLeft1);
     if (wrongGuesses >= 11) figureImages.push(armRight1);
-    figureClass = 'figure-img-pixel'; // Spezielle Klasse für Positioning
+    figureClass = 'figure-img-pixel';
+  } else if (selectedFigure === 'figure-2') {
+    if (wrongGuesses === 6) figureImages.push(dinoHead);
+    if (wrongGuesses >= 7) figureImages.push(dinoHeadBody);
+    if (wrongGuesses >= 8) figureImages.push(dinoFootLeft);
+    if (wrongGuesses >= 9) figureImages.push(dinoFootRight);
+    if (wrongGuesses >= 10) figureImages.push(dinoArmLeft);
+    if (wrongGuesses >= 11) figureImages.push(dinoArmRight);
+    figureClass = 'figure-img-dino';
   }
 
   return (
     <div className="game-screen">
+      {/* Winstreak Anzeige */}
+      {winstreak !== undefined && (
+        <div className="streak-banner">🔥 Streak: {winstreak}</div>
+      )}
+
       <div className="game-header">
         {category && <div className="category">Kategorie: {category}</div>}
         <div className="difficulty">Schwierigkeit: {difficultyConfig.name}</div>
-        <div className="wrong-guesses">
-          Fehler: {wrongGuesses} / {maxWrongGuesses}
-        </div>
+        <div className="wrong-guesses">Fehler: {wrongGuesses} / {maxWrongGuesses}</div>
       </div>
 
       <div className={`hangman-display ${selectedGallowsId}`}>
@@ -259,7 +242,8 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
         <h2>{getDisplayWord()}</h2>
       </div>
 
-      {gameWon && (
+      {/* Normales Modal: Nur wenn KEINE Winstreak aktiv ist (kein Endlos-Modus) */}
+      {gameWon && winstreak === undefined && (
         <div className="game-over win">
           <h2>{MESSAGES.WIN}</h2>
           <p>Das Wort war: <strong>{word}</strong></p>
@@ -267,6 +251,14 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
             Du hast {calculateCoins(true, wrongGuesses, maxWrongGuesses, difficulty)} Coins verdient!
           </p>
           <button onClick={onRestart}>Nochmal spielen</button>
+        </div>
+      )}
+
+      {/* Endlos Feedback: Kurzes Overlay statt Modal bei Sieg in der Streak */}
+      {gameWon && winstreak !== undefined && (
+        <div className="endless-win-feedback">
+          <h2 className="animate-pop">Richtig! 🎉</h2>
+          <p>Nächstes Wort kommt...</p>
         </div>
       )}
 
@@ -281,23 +273,20 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
         </div>
       )}
 
-      {!gameWon && !gameLost && (
-        <div className="alphabet">
+      {!gameLost && (
+        <div className={`alphabet ${(gameWon && winstreak !== undefined) ? 'disabled' : ''}`}>
           {ALPHABET.map(letter => {
             const isGuessed = guessedLetters.has(letter);
             const normalizedLetter = letter.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            const isWrong = isGuessed && !normalizedWord.includes(normalizedLetter);
             const isCorrect = isGuessed && normalizedWord.includes(normalizedLetter);
-            
-            // Mittel/Schwer-Modus: Falsche Buchstaben nicht als "wrong" markieren (verstecken)
-            const showWrong = !difficultyConfig.hideWrongLetters && isWrong;
+            const showWrong = !difficultyConfig.hideWrongLetters && isGuessed && !normalizedWord.includes(normalizedLetter);
 
             return (
               <button
                 key={letter}
                 className={`letter-button ${showWrong ? 'wrong' : ''} ${isCorrect ? 'correct' : ''} ${isGuessed ? 'guessed' : ''}`}
                 onClick={() => handleLetterClick(letter)}
-                disabled={isGuessed}
+                disabled={isGuessed || (gameWon && winstreak !== undefined)}
               >
                 {letter}
               </button>
@@ -306,9 +295,7 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
         </div>
       )}
 
-      <button className="restart-button" onClick={onRestart}>
-        Neues Spiel
-      </button>
+      <button className="restart-button" onClick={onRestart}>Hauptmenü</button>
     </div>
   );
 }
