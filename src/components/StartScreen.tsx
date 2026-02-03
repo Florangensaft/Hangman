@@ -6,9 +6,10 @@ interface StartScreenProps {
   onStartGame: (mode: 'custom' | 'random', word?: string) => void;
   onOpenOptions?: () => void;
   onOpenShop?: () => void;
+  onOpenTest?: () => void;
 }
 
-export function StartScreen({ onStartGame, onOpenOptions, onOpenShop }: StartScreenProps) {
+export function StartScreen({ onStartGame, onOpenOptions, onOpenShop, onOpenTest }: StartScreenProps) {
   const [customWord, setCustomWord] = useState('');
   const [showInput, setShowInput] = useState(false);
 
@@ -65,6 +66,9 @@ export function StartScreen({ onStartGame, onOpenOptions, onOpenShop }: StartScr
     <div className="start-screen">
       <button className="shop-button" onClick={handleShopClick}>
         Shop
+      </button>
+      <button className="test-button" onClick={onOpenTest} style={{position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', padding: '10px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem'}} title="Test Labor">
+        🧪
       </button>
       
       <h1>🎮 Hangman</h1>

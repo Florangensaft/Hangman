@@ -1,3 +1,13 @@
+import fullBody1 from '../assets/images/figures/complete/fullBody1.png';
+import dinoHangman from '../assets/images/figures/complete/dinoHangman.png';
+import fullStickFig from '../assets/images/figures/complete/fullStickFig.png';
+import galgenFull from '../assets/images/gallows/galgenFull.png';
+import woodenGallowFull from '../assets/images/gallows/woodenGallowFull.png';
+import templeGallowFull from '../assets/images/gallows/templeGallowFull.png';
+import deskBG from '../assets/fonts/deskBG.png';
+import tafelBG from '../assets/fonts/tafelBG.png';
+import papierBG from '../assets/fonts/papierBG.png';
+
 /**
  * Spiel-Konstanten für das Hangman-Spiel
  * Zentrale Konfiguration für einfache Erweiterbarkeit
@@ -64,9 +74,9 @@ export const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'.split('');
 // SPIEL-KONFIGURATION
 // ============================================
 export const GAME_CONFIG = {
-  MAX_WRONG_GUESSES: 7, // Standard-Anzahl Fehlversuche
+  MAX_WRONG_GUESSES: 11, // Standard-Anzahl Fehlversuche
   MIN_WRONG_GUESSES: 1, // Minimum Fehlversuche
-  MAX_WRONG_GUESSES_LIMIT: 12, // Maximum Fehlversuche (Limit)
+  MAX_WRONG_GUESSES_LIMIT: 20, // Maximum Fehlversuche (Limit)
   DUPLICATE_PENALTY_MULTIPLIER: 2 // Multiplikator für wiederholte falsche Buchstaben (Hard-Modus)
 } as const;
 
@@ -201,15 +211,27 @@ export const DEFAULT_SHOP_ITEMS: ShopItem[] = [
     description: 'Die Standard-Hangman-Figur',
     category: 'hangman-figures',
     price: 0,
+    imagePath: fullStickFig,
     unlocked: true,
     equipped: true
   },
   {
     id: 'figure-1',
-    name: 'Figur 1',
+    name: 'Pixel',
     description: 'Eine alternative Hangman-Figur',
     category: 'hangman-figures',
     price: 100,
+    imagePath: fullBody1,
+    unlocked: false,
+    equipped: false
+  },
+  {
+    id: 'figure-2',
+    name: 'Dino',
+    description: 'Eine weitere alternative Hangman-Figur',
+    category: 'hangman-figures',
+    price: 200,
+    imagePath: dinoHangman,
     unlocked: false,
     equipped: false
   },
@@ -220,34 +242,58 @@ export const DEFAULT_SHOP_ITEMS: ShopItem[] = [
     description: 'Der Standard-Galgen',
     category: 'gallows',
     price: 0,
+    imagePath: galgenFull,
     unlocked: true,
     equipped: true
   },
   {
     id: 'gallows-1',
-    name: 'Galgen 1',
-    description: 'Ein alternativer Galgen',
+    name: 'Holzgalgen',
+    description: 'Ein rustikaler Holzgalgen',
     category: 'gallows',
     price: 150,
+    imagePath: woodenGallowFull,
+    unlocked: false,
+    equipped: false
+  },
+  {
+    id: 'gallows-2',
+    name: 'Tempelgalgen',
+    description: 'Ein mystischer Tempelgalgen',
+    category: 'gallows',
+    price: 300,
+    imagePath: templeGallowFull,
     unlocked: false,
     equipped: false
   },
   // Hintergründe
   {
     id: 'background-default',
-    name: 'Standard Hintergrund',
+    name: 'Schreibtisch',
     description: 'Der Standard-Hintergrund',
     category: 'backgrounds',
     price: 0,
+    imagePath: deskBG,
     unlocked: true,
     equipped: true
   },
   {
     id: 'background-1',
-    name: 'Hintergrund 1',
-    description: 'Ein alternativer Hintergrund',
+    name: 'Tafel',
+    description: 'Ein Tafel-Hintergrund',
     category: 'backgrounds',
     price: 200,
+    imagePath: tafelBG,
+    unlocked: false,
+    equipped: false
+  },
+  {
+    id: 'background-2',
+    name: 'Papier',
+    description: 'Ein Papier-Hintergrund',
+    category: 'backgrounds',
+    price: 400,
+    imagePath: papierBG,
     unlocked: false,
     equipped: false
   },
@@ -267,6 +313,15 @@ export const DEFAULT_SHOP_ITEMS: ShopItem[] = [
     description: 'Ein alternatives Soundpaket',
     category: 'soundpacks',
     price: 250,
+    unlocked: false,
+    equipped: false
+  },
+  {
+    id: 'soundpack-2',
+    name: 'Soundpaket 2',
+    description: 'Ein weiteres alternatives Soundpaket',
+    category: 'soundpacks',
+    price: 500,
     unlocked: false,
     equipped: false
   }

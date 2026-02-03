@@ -5,7 +5,7 @@ import {
   type ShopItem,
   SHOP_CATEGORIES 
 } from '../constants/gameConstants';
-import { loadShopItems, loadCoins, purchaseItem, equipItem } from '../utils/shopUtils';
+import { loadShopItems, loadCoins, saveCoins, purchaseItem, equipItem } from '../utils/shopUtils';
 
 interface ShopScreenProps {
   onClose: () => void;

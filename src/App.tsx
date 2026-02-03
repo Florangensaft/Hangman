@@ -3,9 +3,11 @@ import { StartScreen } from './components/StartScreen';
 import { GameScreen } from './components/GameScreen';
 import { OptionsScreen } from './components/OptionsScreen';
 import { ShopScreen } from './components/ShopScreen';
+import { TestScreen } from './components/TestScreen';
 import { loadWordsFromCSV, getRandomWord, type Word } from './utils/wordLoader';
-import { Difficulty, DEFAULT_DIFFICULTY, type GameSettings } from './constants/gameConstants';
+import { Difficulty, DEFAULT_DIFFICULTY, type GameSettings, DEFAULT_SHOP_ITEMS } from './constants/gameConstants';
 import { loadSettings } from './utils/settingsUtils';
+import { loadShopItems } from './utils/shopUtils';
 import './App.css';
 
 type GameMode = 'start' | 'custom' | 'random' | 'options';
@@ -17,6 +19,7 @@ type GameState = {
   maxWrongGuesses?: number;
 };
 
+// App Component
 function App() {
   const [gameState, setGameState] = useState<GameState>({ 
     mode: 'start', 
@@ -24,15 +27,33 @@ function App() {
     difficulty: DEFAULT_DIFFICULTY
   });
   const [words, setWords] = useState<Word[]>([]);
-  const [settings, setSettings] = useState<GameSettings | null>(null);
+  const [settings, setSettings] = useState<GameSettings>(() => loadSettings());
   const [showOptions, setShowOptions] = useState(false);
-  const [showShop, setShowShop] = useState(false);
+    const [showShop, setShowShop] = useState(false);
+    const [showTest, setShowTest] = useState(false);
 
-  // Lade Einstellungen beim Start
+  const [selectedFigure, setSelectedFigure] = useState<string>('figure-default');
+  const [selectedBackgroundId, setSelectedBackgroundId] = useState<string>('background-default');
+  const [selectedGallowsId, setSelectedGallowsId] = useState<string>('gallows-default');
+
   useEffect(() => {
-    const loadedSettings = loadSettings();
-    setSettings(loadedSettings);
-  }, []);
+    // Lade Shop Items um ausgerüstete Figur und Hintergrund zu finden
+    const shopItems = loadShopItems();
+    const equippedFigure = shopItems.find(item => item.category === 'hangman-figures' && item.equipped);
+    if (equippedFigure) {
+      setSelectedFigure(equippedFigure.id);
+    }
+    
+    const equippedBackground = shopItems.find(item => item.category === 'backgrounds' && item.equipped);
+    if (equippedBackground) {
+      setSelectedBackgroundId(equippedBackground.id);
+    }
+
+    const equippedGallows = shopItems.find(item => item.category === 'gallows' && item.equipped);
+    if (equippedGallows) {
+      setSelectedGallowsId(equippedGallows.id);
+    }
+  }, [showShop]); // Update wenn Shop geschlossen wird
 
   useEffect(() => {
     // Lade Wörter beim Start
@@ -79,11 +100,19 @@ function App() {
     setShowShop(true);
   };
 
-  const handleCloseShop = () => {
-    setShowShop(false);
-  };
+    const handleCloseShop = () => {
+      setShowShop(false);
+    };
 
-  const handleSettingsChange = (newSettings: GameSettings) => {
+    const handleOpenTest = () => {
+      setShowTest(true);
+    };
+
+    const handleCloseTest = () => {
+      setShowTest(false);
+    };
+
+    const handleSettingsChange = (newSettings: GameSettings) => {
     setSettings(newSettings);
   };
 
@@ -101,18 +130,32 @@ function App() {
     });
   };
 
-  // Warte bis Settings geladen sind
-  if (!settings) {
-    return <div className="app">Lade...</div>;
-  }
+
+  // Hilfsfunktion um das Hintergrundbild basierend auf der ID zu bekommen
+  const getBackgroundImage = () => {
+    const item = DEFAULT_SHOP_ITEMS.find(i => i.id === selectedBackgroundId);
+    return item?.imagePath;
+  };
+
+  const backgroundImage = getBackgroundImage();
 
   return (
-    <div className="app">
+    <div 
+      className="app"
+      style={backgroundImage ? { 
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      } : undefined}
+    >
       {gameState.mode === 'start' ? (
         <StartScreen 
           onStartGame={handleStartGame}
           onOpenOptions={handleOpenOptions}
           onOpenShop={handleOpenShop}
+          onOpenTest={handleOpenTest}
         />
       ) : (
         <GameScreen
@@ -122,6 +165,8 @@ function App() {
           maxWrongGuesses={gameState.maxWrongGuesses}
           onGameEnd={handleGameEnd}
           onRestart={handleRestart}
+          selectedFigure={selectedFigure}
+          selectedGallowsId={selectedGallowsId}
         />
       )}
       {showOptions && (
@@ -133,6 +178,11 @@ function App() {
       {showShop && (
         <ShopScreen
           onClose={handleCloseShop}
+        />
+      )}
+      {showTest && (
+        <TestScreen
+          onBack={handleCloseTest}
         />
       )}
     </div>

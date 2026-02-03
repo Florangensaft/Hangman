@@ -4,17 +4,38 @@ import { type ShopItem, DEFAULT_SHOP_ITEMS, STORAGE_KEYS } from '../constants/ga
  * Lädt die Shop-Items aus dem LocalStorage
  */
 export function loadShopItems(): ShopItem[] {
+  let storedItems: ShopItem[] = [];
   try {
     const stored = localStorage.getItem(STORAGE_KEYS.SHOP_ITEMS);
     if (stored) {
-      return JSON.parse(stored) as ShopItem[];
+      storedItems = JSON.parse(stored) as ShopItem[];
     }
   } catch (error) {
     console.error('Fehler beim Laden der Shop-Items:', error);
   }
-  // Initialisiere mit Default-Items
-  saveShopItems(DEFAULT_SHOP_ITEMS);
-  return DEFAULT_SHOP_ITEMS;
+
+  if (storedItems.length === 0) {
+    saveShopItems(DEFAULT_SHOP_ITEMS);
+    return DEFAULT_SHOP_ITEMS;
+  }
+
+  // Merge stored state with default config
+  const mergedItems = DEFAULT_SHOP_ITEMS.map(defaultItem => {
+    const storedItem = storedItems.find(i => i.id === defaultItem.id);
+    if (storedItem) {
+      // Preserve unlocked and equipped state
+      return {
+        ...defaultItem,
+        unlocked: storedItem.unlocked,
+        equipped: storedItem.equipped
+      };
+    }
+    return defaultItem;
+  });
+
+  // Save merged items to ensure consistency
+  saveShopItems(mergedItems);
+  return mergedItems;
 }
 
 /**
