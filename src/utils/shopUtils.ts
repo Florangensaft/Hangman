@@ -1,4 +1,10 @@
-import { type ShopItem, DEFAULT_SHOP_ITEMS, STORAGE_KEYS } from '../constants/gameConstants';
+import {
+  type ShopItem,
+  type Difficulty,
+  DEFAULT_SHOP_ITEMS,
+  STORAGE_KEYS,
+  SCORING_CONFIG
+} from '../constants/gameConstants';
 
 /**
  * Lädt die Shop-Items aus dem LocalStorage
@@ -110,6 +116,50 @@ export function purchaseItem(itemId: string, items: ShopItem[], coins: number): 
     newCoins, 
     message: `${item.name} erfolgreich gekauft!` 
   };
+}
+
+/**
+ * Berechnet die Coins für ein beendetes Spiel (nur Berechnung, keine Persistenz).
+ * Nutzbar für UI-Anzeige und von awardGameCoins.
+ */
+export function calculateCoins(
+  won: boolean,
+  wrongGuesses: number,
+  maxWrongGuesses: number,
+  difficulty: Difficulty
+): number {
+  if (!SCORING_CONFIG.ENABLED) return 0;
+
+  if (won) {
+    const remainingGuesses = maxWrongGuesses - wrongGuesses;
+    const multiplier = SCORING_CONFIG.DIFFICULTY_MULTIPLIER[difficulty];
+    const raw =
+      (SCORING_CONFIG.BASE_POINTS +
+        remainingGuesses * SCORING_CONFIG.BONUS_PER_REMAINING_GUESS -
+        wrongGuesses * SCORING_CONFIG.PENALTY_PER_WRONG_GUESS) *
+      multiplier;
+    return Math.max(SCORING_CONFIG.MIN_COINS_WIN, Math.floor(raw));
+  } else {
+    return SCORING_CONFIG.CONSOLATION_COINS_LOSS;
+  }
+}
+
+/**
+ * Vergibt Coins für ein beendetes Spiel und speichert den neuen Stand.
+ * Gibt die verdienten Coins zurück.
+ */
+export function awardGameCoins(
+  won: boolean,
+  wrongGuesses: number,
+  maxWrongGuesses: number,
+  difficulty: Difficulty
+): number {
+  const coinsEarned = calculateCoins(won, wrongGuesses, maxWrongGuesses, difficulty);
+  if (coinsEarned > 0) {
+    const current = loadCoins();
+    saveCoins(current + coinsEarned);
+  }
+  return coinsEarned;
 }
 
 /**

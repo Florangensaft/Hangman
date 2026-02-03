@@ -124,13 +124,15 @@ export const TIMER_CONFIG = {
 } as const;
 
 // ============================================
-// PUNKTE-SYSTEM (für zukünftige Features)
+// PUNKTE-SYSTEM (Münz-Vergabe)
 // ============================================
 export const SCORING_CONFIG = {
-  ENABLED: false, // Feature-Flag
+  ENABLED: true, // Feature-Flag für Münz-Vergabe
   BASE_POINTS: 100,
   BONUS_PER_REMAINING_GUESS: 10,
   PENALTY_PER_WRONG_GUESS: 5,
+  MIN_COINS_WIN: 1, // Minimum Coins bei Gewinn (falls Formel negativ)
+  CONSOLATION_COINS_LOSS: 5, // Trost-Coins bei Niederlage
   DIFFICULTY_MULTIPLIER: {
     [Difficulty.EASY]: 1.0,
     [Difficulty.MEDIUM]: 1.5,

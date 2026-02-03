@@ -143,3 +143,63 @@
   font-style: italic;
 }
 
+
+/* Wortlisten-Panel */
+.wordlist-panel {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 16px;
+  color: #fff;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.wordlist-panel h2 { margin-top: 0; }
+
+.wordlist-form label { display: block; margin: 8px 0 6px; }
+.wordlist-form input, .wordlist-form select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  outline: none;
+}
+.wordlist-form select option {
+  background: #333;
+  color: #fff;
+}
+.category-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.category-label { font-weight: 600; }
+.category-switch label { margin-right: 10px; }
+
+.wordlist-panel .form-buttons { display: flex; gap: 10px; margin-top: 10px; }
+.wordlist-panel .form-buttons button {
+  padding: 8px 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700;
+  background: #667eea; color: #fff;
+}
+.wordlist-panel .form-buttons button:nth-child(2) {
+  background: rgba(255,255,255,.15);
+}
+
+.wordlist-list { margin-top: 14px; }
+.wordlist-list ul { list-style: none; padding: 0; margin: 0; }
+.wordlist-list li {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 10px;
+  background: rgba(0,0,0,.25); margin-bottom: 8px;
+}
+.wordlist-list .badge {
+  display: inline-block; margin-right: 8px; padding: 2px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.2); font-size: .8rem;
+}
+.wordlist-list .mini-delete {
+  background: rgba(255, 99, 71, .85); color: #fff; border: none; border-radius: 8px; padding: 6px 8px;
+  cursor: pointer;
+}
+.hint { color: #dfe7ff; opacity: .9; font-size: .9rem; }
+
+

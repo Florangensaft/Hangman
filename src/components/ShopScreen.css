@@ -378,7 +378,9 @@
   font-size: 1.2rem;
 }
 
-/* Pseudo-Shop Modal */
+
+/* Pseudo-Shop Modal (sicher: blockiert nur, wenn offen) */
+
 .buy-coins-modal {
   position: fixed;
   top: 0;
@@ -389,9 +391,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; /* Über dem Shop */
+  z-index: 2000;
   animation: fadeIn 0.3s ease;
 }
+
+
+.buy-coins-modal.is-open {
+  /* Offen: Overlay aktiv */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* über dem Shop */
+  animation: fadeIn 0.3s ease;
+  pointer-events: auto !important;
+}
+
 
 .buy-coins-content {
   background: white;
@@ -484,3 +504,206 @@
 .shop-container::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
 }
+
+/******** Payment-Modal – Stil exakt wie Screenshot (robust) ********/
+
+.shop-screen .buy-coins-content {
+  background: #fff !important;
+  color: #222 !important;
+  width: min(92vw, 460px) !important;
+  padding: 20px 22px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 45px rgba(0,0,0,.25) !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji" !important;
+}
+
+.shop-screen .buy-coins-content h2 {
+  margin: 0 0 6px 0 !important;
+  font-size: 1.6rem !important;
+  font-weight: 800 !important;
+}
+
+.shop-screen .buy-coins-content p {
+  margin: 4px 0 10px 0 !important;
+  font-size: 1rem !important;
+  line-height: 1.35 !important;
+}
+.shop-screen .buy-coins-content p strong { font-weight: 800 !important; }
+
+.shop-screen .buy-coins-content h3 {
+  margin: 8px 0 10px 0 !important;
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+}
+
+/* Methoden-Zeile: unterstützt neue (.method-btn) und alte (.buy-button) Buttons */
+.shop-screen .buy-coins-content .method-grid,
+.shop-screen .buy-coins-content .buy-coins-buttons {
+  display: flex !important;
+  gap: 8px !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  margin: 6px 0 12px 0 !important;
+}
+
+/* Buttons wie Badge-Knöpfe – beide Klassen abgedeckt */
+.shop-screen .buy-coins-content .method-btn,
+.shop-screen .buy-coins-content .buy-button,
+.shop-screen .buy-coins-content .actions .btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 10px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: #222 !important;
+  background: #f2f2f2 !important;
+  border: 1px solid #cfcfcf !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: background .15s ease, box-shadow .15s ease, transform .05s ease !important;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,.05) !important;
+  user-select: none !important;
+}
+
+.shop-screen .buy-coins-content .method-btn:hover,
+.shop-screen .buy-coins-content .buy-button:hover,
+.shop-screen .buy-coins-content .actions .btn:hover {
+  background: #eaeaea !important;
+}
+.shop-screen .buy-coins-content .method-btn:active,
+.shop-screen .buy-coins-content .buy-button:active,
+.shop-screen .buy-coins-content .actions .btn:active {
+  transform: translateY(1px) !important;
+}
+
+/* Abbrechen-Button neutral grau */
+.shop-screen .buy-coins-content .btn-ghost,
+.shop-screen .buy-coins-content .cancel-button {
+  background: #f5f5f5 !important;
+  border: 1px solid #cfcfcf !important;
+  color: #222 !important;
+}
+
+/* Disclaimer dezent grau */
+.shop-screen .buy-coins-content .footer {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+.shop-screen .buy-coins-content .disclaimer {
+  margin: 0 !important;
+  font-size: 0.8rem !important;
+  color: #8a8a8a !important;
+}
+
+/* Formular (falls Card/Paysafe sichtbar) */
+.shop-screen .buy-coins-content label {
+  display: block !important;
+  text-align: left !important;
+  font-size: 0.9rem !important;
+  margin: 10px 0 6px !important;
+  color: #333 !important;
+}
+.shop-screen .buy-coins-content input {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  border: 1px solid #d6d6d6 !important;
+  background: #fff !important;
+  color: #222 !important;
+  box-sizing: border-box !important;
+  outline: none !important;
+  transition: border-color .15s ease, box-shadow .15s ease !important;
+}
+.shop-screen .buy-coins-content input::placeholder { color: #9a9a9a !important; }
+.shop-screen .buy-coins-content input:focus {
+  border-color: #a9a9a9 !important;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.06) !important;
+}
+.shop-screen .buy-coins-content .row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+}
+/* Erfolgssymbol */
+.shop-screen .buy-coins-content .success-screen { text-align: center !important; padding: 6px 0 2px !important; }
+.shop-screen .buy-coins-content .big-emoji { font-size: 44px !important; line-height: 1 !important; margin-bottom: 4px !important; }
+
+
+/* 2) Hover-Effekte auf den Badges */
+.buy-coins-content .method-btn,
+.buy-coins-content .buy-button,
+.buy-coins-content .actions .btn {
+  transition: transform .08s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  will-change: transform, box-shadow;
+}
+
+.buy-coins-content .method-btn:hover,
+.buy-coins-content .buy-button:hover,
+.buy-coins-content .actions .btn:hover {
+  background: #ededed;
+  border-color: #c6c6c6;
+  box-shadow: 0 6px 18px rgba(0,0,0,.10);
+  transform: translateY(-1px);
+}
+
+.buy-coins-content .method-btn:active,
+.buy-coins-content .buy-button:active,
+.buy-coins-content .actions .btn:active {
+  transform: translateY(0); /* kurzes „Tap“-Gefühl */
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+
+/* 4) Overlay im Shop-Look (lila, soft) */
+.buy-coins-modal.is-open {
+  /* ersetzt das harte Schwarz: */
+  background: radial-gradient(120% 120% at 50% 0%, rgba(118,75,162,.32) 0%, rgba(102,126,234,.28) 35%, rgba(20,22,34,.58) 100%);
+  backdrop-filter: blur(1.5px);           /* optional, kann weg wenn du kein Blur willst */
+}
+
+/* Weißkarte leicht „glasig“, passt zum modernen Panel */
+.buy-coins-content {
+  background: rgba(255,255,255,.96);
+  box-shadow:
+    0 18px 60px rgba(102,126,234,.15),
+    0 6px 22px rgba(0,0,0,.12);
+  border: 1px solid rgba(102,126,234,.12);
+}
+
+
+/* 5) Sanfte Open-Animation */
+@keyframes dialogPop {
+  from { transform: translateY(8px) scale(.98); opacity: 0; }
+  to   { transform: translateY(0)   scale(1);    opacity: 1; }
+}
+@keyframes contentFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.buy-coins-content {
+  animation: dialogPop .22s cubic-bezier(.2,.8,.2,1);
+}
+
+.buy-coins-content h2,
+.buy-coins-content p,
+.buy-coins-content h3,
+.buy-coins-content .method-grid,
+.buy-coins-content .buy-coins-buttons,
+.buy-coins-content .actions,
+.buy-coins-content .footer {
+  animation: contentFade .24s ease both;
+}
+.buy-coins-content p        { animation-delay: .03s; }
+.buy-coins-content h3       { animation-delay: .06s; }
+.buy-coins-content .method-grid,
+.buy-coins-content .buy-coins-buttons { animation-delay: .09s; }
+.buy-coins-content .actions { animation-delay: .12s; }
+.buy-coins-content .footer  { animation-delay: .15s; }
+

@@ -8,6 +8,14 @@ import {
   DEFAULT_DIFFICULTY,
   DIFFICULTY_CONFIGS
 } from '../constants/gameConstants';
+import { calculateCoins } from '../utils/shopUtils';
+
+export interface GameEndResult {
+  won: boolean;
+  wrongGuesses: number;
+  maxWrongGuesses: number;
+  difficulty: Difficulty;
+}
 
 // Gallows Images
 import galgenRightfoot from '../assets/images/gallows/galgenRightfoot.png';
@@ -57,7 +65,7 @@ interface GameScreenProps {
   category?: string;
   difficulty?: Difficulty;
   maxWrongGuesses?: number;
-  onGameEnd: (won: boolean) => void;
+  onGameEnd: (result: GameEndResult) => void;
   onRestart: () => void;
   selectedFigure: string;
   selectedGallowsId: string;
@@ -79,6 +87,7 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
 
   // Prüfe ob Spiel gewonnen
   useEffect(() => {
+    if (gameWon || gameLost) return;
     const allLettersGuessed = normalizedWord
       .split('')
       .filter(char => /[A-Z]/.test(char))
@@ -86,17 +95,28 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
     
     if (allLettersGuessed && normalizedWord.length > 0) {
       setGameWon(true);
-      onGameEnd(true);
+      onGameEnd({
+        won: true,
+        wrongGuesses,
+        maxWrongGuesses,
+        difficulty
+      });
     }
-  }, [guessedLetters, normalizedWord, onGameEnd]);
+  }, [gameWon, gameLost, guessedLetters, normalizedWord, wrongGuesses, maxWrongGuesses, difficulty, onGameEnd]);
 
   // Prüfe ob Spiel verloren
   useEffect(() => {
+    if (gameWon || gameLost) return;
     if (wrongGuesses >= maxWrongGuesses) {
       setGameLost(true);
-      onGameEnd(false);
+      onGameEnd({
+        won: false,
+        wrongGuesses,
+        maxWrongGuesses,
+        difficulty
+      });
     }
-  }, [wrongGuesses, maxWrongGuesses, onGameEnd]);
+  }, [gameWon, gameLost, wrongGuesses, maxWrongGuesses, difficulty, onGameEnd]);
 
   const handleLetterClick = useCallback((letter: string) => {
     if (gameWon || gameLost || guessedLetters.has(letter)) {
@@ -243,6 +263,9 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
         <div className="game-over win">
           <h2>{MESSAGES.WIN}</h2>
           <p>Das Wort war: <strong>{word}</strong></p>
+          <p className="coins-earned">
+            Du hast {calculateCoins(true, wrongGuesses, maxWrongGuesses, difficulty)} Coins verdient!
+          </p>
           <button onClick={onRestart}>Nochmal spielen</button>
         </div>
       )}
@@ -251,6 +274,9 @@ export function GameScreen({ word, category, difficulty = DEFAULT_DIFFICULTY, ma
         <div className="game-over lose">
           <h2>{MESSAGES.LOSE}</h2>
           <p>Das Wort war: <strong>{word}</strong></p>
+          <p className="coins-earned">
+            Du hast {calculateCoins(false, wrongGuesses, maxWrongGuesses, difficulty)} Trost-Coins verdient!
+          </p>
           <button onClick={onRestart}>Nochmal spielen</button>
         </div>
       )}
